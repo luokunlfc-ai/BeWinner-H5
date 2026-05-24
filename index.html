@@ -509,6 +509,40 @@
       border-left: 4px solid var(--blue-500);
     }
 
+    .order-card.clickable {
+      cursor: pointer;
+    }
+
+    .order-card.clickable:hover {
+      box-shadow: var(--shadow);
+      border-color: var(--blue-200);
+    }
+
+    .order-summary {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .summary-label {
+      color: var(--slate-500);
+      flex-shrink: 0;
+    }
+
+    .summary-value {
+      font-weight: 600;
+      text-align: right;
+      color: var(--slate-800);
+    }
+
     .status-pill {
       display: inline-block;
       font-size: 11px;
@@ -749,11 +783,11 @@
         <div class="section-label" data-i18n="sec_plan_info">套餐信息</div>
         <div class="row-between" style="margin-bottom: 8px;">
           <span class="muted" data-i18n="lbl_plan_name">套餐名</span>
-          <span style="font-weight: 600;" id="activePlanName">5G 畅享包 · 月付</span>
+          <span style="font-weight: 600;" id="activePlanName">365天100GB主套餐111</span>
         </div>
         <div class="row-between" style="margin-bottom: 4px;">
-          <span class="muted renew-inline" data-i18n="btn_renew">续订</span>
-          <button type="button" class="link-chip renew-inline" id="btnRenew" style="padding: 6px 12px; font-size: 12px;" data-i18n="btn_renew_go">去续订</button>
+          <!--<span class="muted renew-inline" data-i18n="btn_renew">续订</span> 
+          <button type="button" class="link-chip renew-inline" id="btnRenew" style="padding: 6px 12px; font-size: 12px;" data-i18n="btn_renew_go">去续订</button>-->
         </div>
         <div class="ring-wrap">
           <div class="ring" id="ringChart">
@@ -763,7 +797,7 @@
             </svg>
             <div class="ring-center">
               <div class="ring-pct" id="ringPct">62%</div>
-              <div class="ring-label" data-i18n="lbl_remaining">剩余</div>
+              <div class="ring-label" data-i18n="lbl_remaining">已用</div>
             </div>
           </div>
           <div style="flex: 1;">
@@ -829,6 +863,19 @@
       <div id="orderCards"></div>
     </section>
 
+    <section id="page-order-detail" class="page">
+      <button type="button" class="nav-back" id="backFromOrderDetail">← <span data-i18n="nav_back">返回</span></button>
+      <div class="card">
+        <div class="section-label" data-i18n="sec_order_info">订单信息</div>
+        <div class="kv" id="orderDetailKv"></div>
+        <div id="orderDetailRefund"></div>
+      </div>
+      <div style="height: 88px;"></div>
+      <div class="bottom-cta" id="orderDetailCta" style="position: relative; transform: none; left: auto; max-width: none; padding-left: 0; padding-right: 0; background: transparent; border: none; display: none;">
+        <button type="button" class="btn-secondary" id="btnOrderDetailRefund" data-i18n="btn_refund">申请退款</button>
+      </div>
+    </section>
+
     <!-- 5.5 Refund -->
     <section id="page-refund" class="page">
       <button type="button" class="nav-back" id="backFromRefund">← <span data-i18n="nav_back">返回</span></button>
@@ -873,7 +920,7 @@
     (function () {
       const I18N = {
         zh: {
-          app_titles: { detail: "设备详情", order: "生成订购订单", devices: "设备列表", orders: "历史订单", refund: "售后退款" },
+          app_titles: { detail: "设备详情", order: "生成订购订单", devices: "设备列表", orders: "历史订单", orderDetail: "订单详情", refund: "售后退款" },
           sec_basic: "基础信息",
           lbl_device_no: "设备号",
           btn_switch_device: "切换设备",
@@ -883,7 +930,7 @@
           btn_renew: "续订",
           btn_renew_go: "去续订",
           lbl_plan_remain: "套餐剩余量",
-          lbl_remaining: "剩余",
+          lbl_remaining: "已用",
           lbl_remain_days: "剩余时长（天）",
           unit_days: "天",
           traffic_exhausted: "流量用尽",
@@ -922,6 +969,8 @@
           order_status: "订单状态",
           pkg_status: "套餐状态",
           pkg_type: "套餐类型",
+          order_time: "订购时间",
+          valid_period: "有效期限",
           eff_time: "生效时间",
           exp_time: "失效时间",
           total_flow: "总流量",
@@ -930,6 +979,8 @@
           merchant_no: "收款方商户号",
           refund_status: "退款状态",
           btn_refund: "申请退款",
+          st_processing: "处理中",
+          st_failed: "订单失败",
           st_paid: "已支付",
           st_refunding: "退款中",
           st_refunded: "已退款",
@@ -948,9 +999,10 @@
           files_selected: "已选择 {n} 张图片",
         },
         en: {
-          app_titles: { detail: "Device", order: "Checkout", devices: "My devices", orders: "Order history", refund: "Refund" },
+          app_titles: { detail: "Device", order: "Checkout", devices: "My devices", orders: "Order history", orderDetail: "Order details", refund: "Refund" },
           sec_basic: "Basics",
           lbl_device_no: "Device ID",
+          lbl_device_time: "Device Time",
           btn_switch_device: "Switch device",
           btn_order_history: "Orders",
           sec_plan_info: "Current plan",
@@ -997,6 +1049,8 @@
           order_status: "Status",
           pkg_status: "Plan status",
           pkg_type: "Plan type",
+          order_time: "Order time",
+          valid_period: "Validity period",
           eff_time: "Start",
           exp_time: "End",
           total_flow: "Total data",
@@ -1005,6 +1059,8 @@
           merchant_no: "Merchant ID",
           refund_status: "Refund",
           btn_refund: "Request refund",
+          st_processing: "Processing",
+          st_failed: "Order failed",
           st_paid: "Paid",
           st_refunding: "Refunding",
           st_refunded: "Refunded",
@@ -1028,22 +1084,23 @@
       const state = {
         currentDeviceId: "DEV-8829-X1",
         hasMainPlan: true,
-        activePlan: { nameKey: "5G 畅享包 · 月付", usedGb: 1.9, totalGb: 5, daysLeft: 18 },
+        activePlan: { nameKey: "365天100GB主套餐111", usedGb: 1.9, totalGb: 5, daysLeft: 18 },
         tab: "main",
         selectedPkgId: null,
         selectedPayId: "wechat",
+        selectedOrderId: null,
         refundOrderId: null,
       };
 
       const devices = [
-        { id: "DEV-8829-X1", usedGb: 3.1, totalGb: 5, daysLeft: 18, start: "2026-04-01", end: "2026-05-01", plan: "5G 畅享包 · 月付" },
+        { id: "DEV-8829-X1", usedGb: 3.1, totalGb: 5, daysLeft: 18, start: "2026-04-01", end: "2026-05-01", plan: "365天100GB主套餐111" },
         { id: "DEV-7712-B2", usedGb: 2, totalGb: 10, daysLeft: 6, start: "2026-03-10", end: "2026-04-10", plan: "体验套餐" },
         { id: "DEV-6601-C9", usedGb: 0, totalGb: 0, daysLeft: 0, start: "2026-02-01", end: "2026-02-28", plan: "—" },
       ];
 
       const packages = {
         main: [
-          { id: "m1", name: "5G 畅享包 · 月付", price: 59, periods: 1, months: 1, flow: "50GB" },
+          { id: "m1", name: "365天100GB主套餐111", price: 59, periods: 1, months: 1, flow: "50GB" },
           { id: "m2", name: "5G 畅享包 · 季付", price: 149, periods: 1, months: 3, flow: "200GB" },
         ],
         trial: [
@@ -1066,11 +1123,12 @@
           id: "o1",
           status: "paid",
           refundProgress: null,
-          pkgName: "5G 畅享包 · 月付",
+          pkgName: "365天100GB主套餐111",
           pkgStatus: "active",
           pkgType: "main",
-          start: "2026-04-08 10:00",
-          end: "2026-05-08 10:00",
+          orderTime: "2026-05-08",
+          start: "2026-05-08",
+          end: "2026-06-08",
           flow: "50 GB",
           amount: 59,
           tradeNo: "TX202605080001",
@@ -1085,6 +1143,7 @@
           pkgName: "体验套餐",
           pkgStatus: "expired",
           pkgType: "trial",
+          orderTime: "2026-03-01",
           start: "2026-03-01",
           end: "2026-03-08",
           flow: "10 GB",
@@ -1102,6 +1161,7 @@
           pkgName: "季付加油组合",
           pkgStatus: "expired",
           pkgType: "addon",
+          orderTime: "2025-12-01",
           start: "2025-12-01",
           end: "2026-03-01",
           flow: "200 GB",
@@ -1133,7 +1193,7 @@
           el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
         });
         const page = document.querySelector(".page.active")?.id || "page-detail";
-        const map = { "page-detail": "detail", "page-order": "order", "page-devices": "devices", "page-orders": "orders", "page-refund": "refund" };
+        const map = { "page-detail": "detail", "page-order": "order", "page-devices": "devices", "page-orders": "orders", "page-order-detail": "orderDetail", "page-refund": "refund" };
         const titleKey = map[page];
         if (titleKey) document.getElementById("appTitle").textContent = I18N[lang].app_titles[titleKey];
       }
@@ -1148,6 +1208,7 @@
         renderPayChannels();
         renderDeviceCards();
         renderOrderCards();
+        renderOrderDetail();
         updateDetailTexts();
         if (state.selectedPkgId) syncOrderPage();
       }
@@ -1158,7 +1219,7 @@
         if (el) el.classList.add("active");
         const detailCta = document.getElementById("detailCta");
         detailCta.style.display = id === "page-detail" ? "block" : "none";
-        const map = { "page-detail": "detail", "page-order": "order", "page-devices": "devices", "page-orders": "orders", "page-refund": "refund" };
+        const map = { "page-detail": "detail", "page-order": "order", "page-devices": "devices", "page-orders": "orders", "page-order-detail": "orderDetail", "page-refund": "refund" };
         document.getElementById("appTitle").textContent = I18N[lang].app_titles[map[id]] || "";
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -1321,10 +1382,30 @@
       }
 
       function statusLabel(st) {
+        if (st === "processing") return t("st_processing");
+        if (st === "failed") return t("st_failed");
         if (st === "paid") return t("st_paid");
         if (st === "refunding") return t("st_refunding");
         if (st === "refunded") return t("st_refunded");
         return st;
+      }
+
+      function validPeriodLabel(order) {
+        return `${order.start} — ${order.end}`;
+      }
+
+      function isRefundEligible(order) {
+        const now = new Date();
+        const expireAt = new Date(String(order.end).replace(/-/g, "/"));
+        const hasRefundRequest = order.refundProgress != null || order.status === "refunding" || order.status === "refunded";
+        return order.status === "paid" && !hasRefundRequest && !Number.isNaN(expireAt.getTime()) && expireAt >= now;
+      }
+
+      function orderStatusClass(status) {
+        if (status === "refunded") return "status-done";
+        if (status === "refunding" || status === "failed") return "status-refund";
+        if (status === "processing") return "status-pending";
+        return "status-active";
       }
 
       function pkgStatusLabel(s) {
@@ -1365,45 +1446,57 @@
         document.getElementById("orderCards").innerHTML = orders
           .filter((o) => o.deviceId === state.currentDeviceId)
           .map((o) => {
-            const refundBlock = refundStepsHtml(o);
-            const refundBtn =
-              o.canRefund
-                ? `<button type="button" class="btn-secondary refund-btn" data-order="${o.id}" style="margin-top:12px;">${t("btn_refund")}</button>`
-                : "";
             return `
-            <div class="card order-card" style="margin-bottom:12px;">
+            <div class="card order-card clickable" data-order="${o.id}" style="margin-bottom:12px;">
               <div class="row-between" style="margin-bottom:10px;">
-                <span class="status-pill ${o.status === "refunded" ? "status-done" : o.status === "refunding" ? "status-refund" : "status-active"}">${statusLabel(
-                  o.status
-                )}</span>
+                <span class="status-pill ${orderStatusClass(o.status)}">${statusLabel(o.status)}</span>
                 <span class="price price-sm">¥${o.amount}</span>
               </div>
-              <div class="kv" style="margin-top:8px;">
-                <dt>${t("lbl_plan_name")}</dt><dd>${o.pkgName}</dd>
-                <dt>${t("pkg_status")}</dt><dd>${pkgStatusLabel(o.pkgStatus)}</dd>
-                <dt>${t("pkg_type")}</dt><dd>${pkgTypeLabel(o.pkgType)}</dd>
-                <dt>${t("eff_time")}</dt><dd style="font-size:12px;">${o.start}</dd>
-                <dt>${t("exp_time")}</dt><dd style="font-size:12px;">${o.end}</dd>
-                <dt>${t("total_flow")}</dt><dd>${o.flow}</dd>
-                <dt>${t("order_amount")}</dt><dd style="color:var(--blue-700);font-weight:700;">¥${o.amount}</dd>
-                <dt>${t("trade_no")}</dt><dd style="font-size:11px;word-break:break-all;">${o.tradeNo}</dd>
-                <dt>${t("merchant_no")}</dt><dd style="font-size:11px;">${o.merchant}</dd>
-                <dt>${t("lbl_device_no")}</dt><dd class="device-id" style="font-size:13px;">${o.deviceId}</dd>
+              <div class="order-summary">
+                <div class="summary-row"><span class="summary-label">${t("lbl_plan_name")}</span><span class="summary-value">${o.pkgName}</span></div>
+                <div class="summary-row"><span class="summary-label">${t("pkg_status")}</span><span class="summary-value">${pkgStatusLabel(o.pkgStatus)}</span></div>
+                <div class="summary-row"><span class="summary-label">${t("order_time")}</span><span class="summary-value">${o.orderTime || o.end}</span></div>
+                <div class="summary-row"><span class="summary-label">${t("valid_period")}</span><span class="summary-value">${validPeriodLabel(o)}</span></div>
               </div>
-              ${refundBlock}
-              ${refundBtn}
             </div>`;
           })
           .join("");
 
-        document.querySelectorAll(".refund-btn").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            state.refundOrderId = btn.getAttribute("data-order");
-            renderRefundForm();
-            showPage("page-refund");
+        document.querySelectorAll("#orderCards .order-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            state.selectedOrderId = card.getAttribute("data-order");
+            renderOrderDetail();
+            showPage("page-order-detail");
           });
         });
+      }
+
+      function renderOrderDetail() {
+        const o = orders.find((x) => x.id === state.selectedOrderId);
+        const kv = document.getElementById("orderDetailKv");
+        const refund = document.getElementById("orderDetailRefund");
+        const cta = document.getElementById("orderDetailCta");
+        if (!kv || !refund || !cta) return;
+        if (!o) {
+          kv.innerHTML = "";
+          refund.innerHTML = "";
+          cta.style.display = "none";
+          return;
+        }
+
+        kv.innerHTML = `
+          <dt>${t("lbl_device_no")}</dt><dd>${o.deviceId}</dd>
+          <dt>${t("order_status")}</dt><dd>${statusLabel(o.status)}</dd>
+          <dt>${t("order_amount")}</dt><dd><span class="price price-sm">¥${o.amount}</span></dd>
+          <dt>${t("lbl_plan_name")}</dt><dd>${o.pkgName}</dd>
+          <dt>${t("pkg_status")}</dt><dd>${pkgStatusLabel(o.pkgStatus)}</dd>
+          <dt>${t("pkg_type")}</dt><dd>${pkgTypeLabel(o.pkgType)}</dd>
+          <dt>${t("valid_period")}</dt><dd style="font-size:12px;">${validPeriodLabel(o)}</dd>
+          <dt>${t("total_flow")}</dt><dd>${o.flow}</dd>
+          <dt>${t("trade_no")}</dt><dd style="word-break:break-all;font-size:12px;">${o.tradeNo}</dd>
+        `;
+        refund.innerHTML = o.refundProgress == null ? "" : refundStepsHtml(o);
+        cta.style.display = isRefundEligible(o) ? "block" : "none";
       }
 
       function renderRefundForm() {
@@ -1451,15 +1544,18 @@
         showPage("page-orders");
       });
 
-      document.getElementById("btnRenew").addEventListener("click", () => {
-        state.tab = "main";
-        document.querySelectorAll(".tab").forEach((tb) => tb.classList.toggle("active", tb.getAttribute("data-tab") === "main"));
-        state.selectedPkgId = packages.main[0]?.id || null;
-        renderPackages();
-        document.getElementById("btnBuyNow").disabled = !state.selectedPkgId;
-        syncOrderPage();
-        showPage("page-order");
-      });
+      const btnRenew = document.getElementById("btnRenew");
+      if (btnRenew) {
+        btnRenew.addEventListener("click", () => {
+          state.tab = "main";
+          document.querySelectorAll(".tab").forEach((tb) => tb.classList.toggle("active", tb.getAttribute("data-tab") === "main"));
+          state.selectedPkgId = packages.main[0]?.id || null;
+          renderPackages();
+          document.getElementById("btnBuyNow").disabled = !state.selectedPkgId;
+          syncOrderPage();
+          showPage("page-order");
+        });
+      }
 
       document.getElementById("btnBuyNow").addEventListener("click", () => {
         if (!state.selectedPkgId) return;
@@ -1470,7 +1566,15 @@
       document.getElementById("backFromOrder").addEventListener("click", () => showPage("page-detail"));
       document.getElementById("backFromDevices").addEventListener("click", () => showPage("page-detail"));
       document.getElementById("backFromOrders").addEventListener("click", () => showPage("page-detail"));
-      document.getElementById("backFromRefund").addEventListener("click", () => showPage("page-orders"));
+      document.getElementById("backFromOrderDetail").addEventListener("click", () => showPage("page-orders"));
+      document.getElementById("backFromRefund").addEventListener("click", () => showPage("page-order-detail"));
+
+      document.getElementById("btnOrderDetailRefund").addEventListener("click", () => {
+        if (!state.selectedOrderId) return;
+        state.refundOrderId = state.selectedOrderId;
+        renderRefundForm();
+        showPage("page-refund");
+      });
 
       document.getElementById("btnPay").addEventListener("click", () => {
         toast(t("toast_pay"));
@@ -1499,9 +1603,16 @@
       });
 
       document.getElementById("btnRefundSubmit").addEventListener("click", () => {
+        const order = orders.find((item) => item.id === state.refundOrderId);
+        if (order) {
+          order.status = "refunding";
+          order.refundProgress = 0;
+          order.canRefund = false;
+        }
         toast(t("toast_submit"));
         setTimeout(() => {
           renderOrderCards();
+          renderOrderDetail();
           showPage("page-orders");
         }, 600);
       });
